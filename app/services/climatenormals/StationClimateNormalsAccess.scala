@@ -82,7 +82,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
       case None => "TRUE" // ignore this bound type
       case Some(ys) => {
         Try(parseYear(ys, 0, 9999)) match {
-          case Failure(e) => throw new BadRequestException(s"failed to parse $btype value: ${e.getMessage}")
+          case Failure(e) => throw new BadRequestException(s"Failed to parse $btype value: ${e.getMessage}")
           case Success(y) => s"$y ${if (btype.toLowerCase == "validfrom") "< tyear" else "> fyear"}"
         }
       }
@@ -170,7 +170,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
       stations.foreach(s => {
         Try{val x = s.toInt; if (x < 0) throw new Exception } match {
           case Failure(e) => throw new BadRequestException(
-            s"invalid station number: $s (note that sensor channels are currently not supported for climate normals)")
+            s"Invalid station number: $s (note that sensor channels are currently not supported for climate normals)")
           case Success(_) =>
         }
       })
@@ -187,7 +187,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
       if ((elemMonthQ.toUpperCase == "FALSE") && (elemDayQ.toUpperCase == "FALSE")) {
         throw new BadRequestException(
-          s"no valid elements specified",
+          s"No valid elements specified",
           Some(s"valid elements for month normals: ${monthLegacyCodes.mkString(", ")}; valid elements for day normals: ${dayLegacyCodes.mkString(", ")}"))
       }
 
