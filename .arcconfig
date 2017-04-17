@@ -1,0 +1,5 @@
+{
+    "project.name" : "metapi-climatenormals",
+    "phabricator.uri": "https://phab.met.no",
+    "unit.engine": "PlayTestEngine"
+}

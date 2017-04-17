@@ -1,7 +1,7 @@
 Climate normals service for MET API
 ==============================================
 
-This module implements a service for retrieving IDF values for observations (IDF = Intensity Duration Frequency).
+This module implements a service for retrieving climate normals.
 
 # Run
 

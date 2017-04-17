@@ -1,0 +1,6 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# MET API
+GET     /v0.:format             controllers.ClimateNormalsController.getClimateNormals(sources: String, elements: Option[String], validfrom: Option[String], validto: Option[String], months: Option[String], days: Option[String], format: String)

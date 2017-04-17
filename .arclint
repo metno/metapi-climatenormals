@@ -1,0 +1,45 @@
+{
+  "exclude": [
+    "(^public/swagger.*/)",
+    "(^legacy/)",
+    "(\\.project$)",
+    "(\\.phutil_module_cache$)",
+    "(^test/resources.*/)"
+  ],
+  "linters": {
+    "chmod": {
+      "type": "chmod"
+    },
+    "filename": {
+      "type": "filename"
+    },
+    "generated": {
+      "type": "generated"
+    },
+    "json": {
+      "type": "json",
+      "include": [
+        "(^\\.arcconfig$)",
+        "(^\\.arclint$)",
+        "(\\.json$)"
+      ]
+    },
+    "nolint": {
+      "type": "nolint"
+    },
+    "scalastyle": {
+      "type": "scalastyle",
+      "config": "/etc/scalastyle-config.xml"
+    },
+    "spelling": {
+      "type": "spelling"
+    },
+    "text": {
+      "type": "text",
+      "severity": {
+        "3": "disabled",
+        "5": "advice"
+      }
+    }
+  }
+}
