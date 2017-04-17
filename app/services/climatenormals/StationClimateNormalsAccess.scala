@@ -164,6 +164,17 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
       val stations = SourceSpecification(Some(qp.sources), Some(StationConfig.typeName)).stationNumbers
       assert(stations.nonEmpty)
+
+      // for now, check at this point that stations contains only non-negative integeres (and not for example '18700:1' or '18700:all')
+      // (later, SourceSpecification such a restriction could be included in the SourceSpecification API ... TBD)
+      stations.foreach(s => {
+        Try{val x = s.toInt; if (x < 0) throw new Exception } match {
+          case Failure(e) => throw new BadRequestException(
+            s"invalid station number: $s (note that sensor channels are currently not supported for climate normals)")
+          case Success(_) =>
+        }
+      })
+
       val sourceQ = s"stnr IN (${stations.mkString(",")})"
 
       val normalTableAlias = "nta"
