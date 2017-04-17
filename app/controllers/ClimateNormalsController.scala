@@ -81,7 +81,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     } match {
       case Success(data) =>
         if (data isEmpty) {
-          Error.error(NOT_FOUND, Option("Could not find climate normnals for this combination of query parameters"), None, start)
+          Error.error(NOT_FOUND, Option("Could not find climate normals for this combination of query parameters"), None, start)
         } else {
           format.toLowerCase() match {
             case "jsonld" => Ok(new ClimateNormalsJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals-v0+json"
