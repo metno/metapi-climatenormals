@@ -53,7 +53,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     new ApiResponse(code = 500, message = "Internal server error.")))
   def getClimateNormals( // scalastyle:ignore public.methods.have.type
     // scalastyle:off line.size.limit
-    @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;).", required = true)
+    @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.", required = true)
     sources: String,
     @ApiParam(value = "The elements to get climate normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported: TANM, TAXM, UM, and TAM_DAY_STDEV for month normals, and TAM and RR_ACC for day normals. If left out, climate normals for all available elements will be returned.")
     elements: Option[String],
