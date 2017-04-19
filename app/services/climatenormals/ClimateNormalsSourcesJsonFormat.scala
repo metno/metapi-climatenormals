@@ -32,16 +32,16 @@ import com.github.nscala_time.time.Imports._
 import java.net.URL
 import no.met.data.{ ApiConstants, ConfigUtil }
 import no.met.json.BasicJsonFormat
-import models.{ ClimateNormalsResponse, ClimateNormal }
+import models.{ ClimateNormalsSourcesResponse, ClimateNormalsSource }
 
 /**
- * Creating a JSON representation of climate normals data
+ * Creating a JSON representation of climate normals sources data
  */
-class ClimateNormalsJsonFormat extends BasicJsonFormat {
+class ClimateNormalsSourcesJsonFormat extends BasicJsonFormat {
 
-  implicit val climateNormalWrites = Json.writes[ClimateNormal]
+  implicit val climateNormalsSourceWrites = Json.writes[ClimateNormalsSource]
 
-  implicit val climateNormalsResponseWrites: Writes[ClimateNormalsResponse] = (
+  implicit val climateNormalsSourcesResponseWrites: Writes[ClimateNormalsSourcesResponse] = (
     (JsPath \ ApiConstants.CONTEXT_NAME).write[URL] and
     (JsPath \ ApiConstants.OBJECT_TYPE_NAME).write[String] and
     (JsPath \ ApiConstants.API_VERSION_NAME).write[String] and
@@ -55,8 +55,8 @@ class ClimateNormalsJsonFormat extends BasicJsonFormat {
     (JsPath \ ApiConstants.NEXT_LINK_NAME).writeNullable[URL] and
     (JsPath \ ApiConstants.PREVIOUS_LINK_NAME).writeNullable[URL] and
     (JsPath \ ApiConstants.CURRENT_LINK_NAME).write[URL] and
-    (JsPath \ ApiConstants.DATA_NAME).write[Seq[ClimateNormal]]
-  )(unlift(ClimateNormalsResponse.unapply))
+    (JsPath \ ApiConstants.DATA_NAME).write[Seq[ClimateNormalsSource]]
+  )(unlift(ClimateNormalsSourcesResponse.unapply))
 
   /**
    * Create json representation of the given list
@@ -64,12 +64,12 @@ class ClimateNormalsJsonFormat extends BasicJsonFormat {
    * @param data The list to create a representation of.
    * @return json representation, as a string
    */
-  def format[A](start: DateTime, data: List[ClimateNormal])(implicit request: Request[A]): String = {
+  def format[A](start: DateTime, data: List[ClimateNormalsSource])(implicit request: Request[A]): String = {
     val size = data.size
     val duration = new Duration(DateTime.now.getMillis() - start.getMillis())
-    val response = new ClimateNormalsResponse(
+    val response = new ClimateNormalsSourcesResponse(
       new URL(ApiConstants.METAPI_CONTEXT),
-      "ClimateNormalsResponse",
+      "ClimateNormalsSourcesResponse",
       "v0",
       new URL(ApiConstants.METAPI_LICENSE),
       start,

@@ -47,10 +47,13 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     response = classOf[models.ClimateNormalsResponse],
     httpMethod = "GET")
   @ApiResponses(Array(
+    // scalastyle:off magic.number
     new ApiResponse(code = 400, message = "Invalid parameter value or malformed request."),
     new ApiResponse(code = 401, message = "Unauthorized client ID."),
     new ApiResponse(code = 404, message = "No data was found for this combination of query parameters."),
-    new ApiResponse(code = 500, message = "Internal server error.")))
+    new ApiResponse(code = 500, message = "Internal server error."))
+    // scalastyle:on magic.number
+  )
   def getClimateNormals( // scalastyle:ignore public.methods.have.type
     // scalastyle:off line.size.limit
     @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.", required = true)
@@ -86,6 +89,65 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
           format.toLowerCase() match {
             case "jsonld" => Ok(new ClimateNormalsJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals-v0+json"
             case x        => Error.error(BAD_REQUEST, Some(s"Invalid output format: $x"), Some("Supported output formats: jsonld"), start)
+          }
+        }
+      case Failure(x: BadRequestException) =>
+        Error.error(BAD_REQUEST, Some(x getLocalizedMessage), x help, start)
+      case Failure(x) => {
+        //$COVERAGE-OFF$
+        Logger.error(x.getLocalizedMessage)
+        Error.error(INTERNAL_SERVER_ERROR, Some("An internal error occurred"), None, start)
+        //$COVERAGE-ON$
+      }
+    }
+  }
+
+
+  @ApiOperation(
+    value = "Get available sources for climate normals.",
+    notes = "Get available sources for climate normals. To be expanded.",
+    response = classOf[models.ClimateNormalsResponse],
+    httpMethod = "GET")
+  @ApiResponses(Array(
+    // scalastyle:off magic.number
+    new ApiResponse(code = 400, message = "Invalid parameter value or malformed request."),
+    new ApiResponse(code = 401, message = "Unauthorized client ID."),
+    new ApiResponse(code = 404, message = "No data was found for this combination of query parameters."),
+    new ApiResponse(code = 500, message = "Internal server error."))
+    // scalastyle:on magic.number
+  )
+  def getSources( // scalastyle:ignore public.methods.have.type
+    // scalastyle:off line.size.limit
+    @ApiParam(value = "The sources to get information for as a comma-separated list. Each source should be of the form SN&lt;number&gt;. If left out, all available sources are considered for output.")
+    sources: Option[String],
+    @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported: TANM, TAXM, UM, and TAM_DAY_STDEV for month normals, and TAM and RR_ACC for day normals. If specified, only sources that provide climate normals for at least one of these elements are considered for output. Otherwise, there is no restriction on elements.")
+    elements: Option[String],
+    @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, a source will not be considered for output if all its climate normals are valid only before this year.")
+    validfrom: Option[String],
+    @ApiParam(value = "The end year of the validity period as a four-digit integer, e.g. '1975'. If specified, a source will not be considered for output if all its climate normals are valid only after this year.")
+    validto: Option[String],
+    @ApiParam(value = "The output format of the result.",
+      allowableValues = "jsonld",
+      defaultValue = "jsonld")
+    format: String) = no.met.security.AuthorizedAction { implicit request =>
+    // scalastyle:on line.size.limit
+
+    val start = DateTime.now(DateTimeZone.UTC) // start the clock
+
+    Try  {
+      // ensure that the query string contains supported fields only
+      QueryStringUtil.ensureSubset(Set("sources", "elements", "validfrom", "validto"), request.queryString.keySet)
+
+      climateNormalsAccess.sources(ClimateNormalsSourcesQueryParameters(sources, elements, validfrom, validto))
+    } match {
+      case Success(data) =>
+        if (data isEmpty) {
+          Error.error(NOT_FOUND, Option("Could not find climate normals for this combination of query parameters"), None, start)
+        } else {
+          format.toLowerCase() match {
+            case "jsonld" => Ok(
+              new ClimateNormalsSourcesJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals.availablesources-v0+json"
+            case x => Error.error(BAD_REQUEST, Some(s"Invalid output format: $x"), Some("Supported output formats: jsonld"), start)
           }
         }
       case Failure(x: BadRequestException) =>

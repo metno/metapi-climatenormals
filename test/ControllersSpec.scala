@@ -35,7 +35,7 @@ import TestUtil._
 import no.met.data._
 
 
-// scalastyle:off magic.number
+// sxxcalastyle:off magic.number
 /*
  * Note that these tests primarily exercise the routes and very basic controller
  * functionality; they are no guarantee that the queries against the database
@@ -71,6 +71,33 @@ class ControllersSpec extends Specification {
 
     // TBD: Add more tests!!!
   }
-}
 
-// scalastyle:on
+  "metapi /climatenormals/availableSources" should {
+
+    "test empty query string" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableSources/v0.jsonld")).get
+      status(response) must equalTo(OK)
+    }
+
+    "test unsupported format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableSources/v0.jsonldx")).get
+      status(response) must equalTo(BAD_REQUEST)
+    }
+
+    "test malformed version/format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableSources/v(0~jsonldx")).get
+      status(response) must equalTo(NOT_FOUND)
+    }
+
+    "test single source" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableSources/v0.jsonld?sources=SN18700")).get
+      status(response) must equalTo(OK)
+      val json = Json.parse(contentAsString(response))
+      contentType(response) must beSome.which(_ == "application/vnd.no.met.data.climatenormals.availablesources-v0+json")
+      (json \ "data").as[JsArray].value.size must equalTo(1)
+    }
+
+    // TBD: Add more tests!!!
+  }
+
+}

@@ -32,10 +32,10 @@ import com.github.nscala_time.time.Imports._
 import no.met.data.{ApiConstants,BasicResponse}
 import no.met.geometry.Point
 
-@ApiModel(description="Data response for climate normals")
-case class ClimateNormalsResponse(
+@ApiModel(description="Data response for climate normals sources")
+case class ClimateNormalsSourcesResponse(
   @(ApiModelProperty @field)(name=ApiConstants.CONTEXT_NAME, value=ApiConstants.CONTEXT, example=ApiConstants.METAPI_CONTEXT) context: URL,
-  @(ApiModelProperty @field)(name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsResponse") responseType: String,
+  @(ApiModelProperty @field)(name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsSourcesResponse") responseType: String,
   @(ApiModelProperty @field)(value=ApiConstants.API_VERSION, example=ApiConstants.API_VERSION_EXAMPLE) apiVersion: String,
   @(ApiModelProperty @field)(value=ApiConstants.LICENSE, example=ApiConstants.METAPI_LICENSE) license: URL,
   @(ApiModelProperty @field)(value=ApiConstants.CREATED_AT, dataType="String", example=ApiConstants.CREATED_AT_EXAMPLE) createdAt: DateTime,
@@ -47,18 +47,15 @@ case class ClimateNormalsResponse(
   @(ApiModelProperty @field)(value=ApiConstants.NEXT_LINK, example=ApiConstants.NEXT_LINK_EXAMPLE) nextLink: Option[URL],
   @(ApiModelProperty @field)(value=ApiConstants.PREVIOUS_LINK, example=ApiConstants.PREVIOUS_LINK_EXAMPLE) previousLink: Option[URL],
   @(ApiModelProperty @field)(value=ApiConstants.CURRENT_LINK, example=ApiConstants.CURRENT_LINK_EXAMPLE) currentLink: URL,
-  @(ApiModelProperty @field)(value=ApiConstants.DATA) data: Seq[ClimateNormal]
+  @(ApiModelProperty @field)(value=ApiConstants.DATA) data: Seq[ClimateNormalsSource]
 )
 extends BasicResponse(
   context, responseType, apiVersion, license, createdAt, queryTime, currentItemCount, itemsPerPage, offset, totalItemCount, nextLink, previousLink, currentLink)
 
-@ApiModel(description="Metadata for a single climate normal value")
-case class ClimateNormal(
+@ApiModel(description="Metadata for a single climate normals source")
+case class ClimateNormalsSource(
     @(ApiModelProperty @field)(value="Source id.", example="SN18700") sourceId: String,
     @(ApiModelProperty @field)(value="Element id.", example="TANM") elementId: String,
     @(ApiModelProperty @field)(value="Start of validity period.", example="1931") validFrom: Int,
-    @(ApiModelProperty @field)(value="End of validity period.", example="1960") validTo: Int,
-    @(ApiModelProperty @field)(value="Month.", example="3") month: Int,
-    @(ApiModelProperty @field)(value="Day of month (omitted if n/a).", example="31") day: Option[Int],
-    @(ApiModelProperty @field)(value="Normal value.", example="5.2") normal: Double
+    @(ApiModelProperty @field)(value="End of validity period.", example="1960") validTo: Int
 )

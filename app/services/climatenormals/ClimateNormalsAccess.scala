@@ -25,18 +25,25 @@
 
 package services.climatenormals
 
-import models.ClimateNormal
+import models.{ ClimateNormal, ClimateNormalsSource }
 import scala.util._
 import no.met.data._
 import no.met.geometry._
 
 
 /**
- * Holds query string parameters from the original request.
+ * Holds query string parameters from the original request for the base endpoint.
  */
 case class ClimateNormalsQueryParameters(
   sources: String, elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None,
   months: Option[String] = None, days: Option[String] = None)
+
+
+/**
+  * Holds query string parameters from the original request for the availableSources/ endpoint.
+  */
+case class ClimateNormalsSourcesQueryParameters(
+  sources: Option[String], elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None)
 
 
 /**
@@ -49,4 +56,10 @@ trait ClimateNormalsAccess {
     * Extracts climate normals based on query parameters.
     */
   def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal]
+
+  /**
+    * Extracts available sources for climate normals based on query parameters.
+    */
+  def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource]
+
 }

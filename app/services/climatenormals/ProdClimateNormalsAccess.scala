@@ -25,7 +25,7 @@
 
 package services.climatenormals
 
-import models.ClimateNormal
+import models.{ ClimateNormal, ClimateNormalsSource }
 import no.met.data._
 import scala.util._
 
@@ -39,6 +39,7 @@ import scala.util._
   */
 class ProdClimateNormalsAccess extends ClimateNormalsAccess {
   def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = ProdClimateNormalsAccess.stationAccess.normals(qp)
+  def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = ProdClimateNormalsAccess.stationAccess.sources(qp)
 }
 
 

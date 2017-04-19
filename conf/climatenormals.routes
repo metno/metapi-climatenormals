@@ -3,4 +3,5 @@
 # ~~~~
 
 # MET API
-GET     /v0.:format             controllers.ClimateNormalsController.getClimateNormals(sources: String, elements: Option[String], validfrom: Option[String], validto: Option[String], months: Option[String], days: Option[String], format: String)
+GET    /v0.:format                     controllers.ClimateNormalsController.getClimateNormals(sources: String, elements: Option[String], validfrom: Option[String], validto: Option[String], months: Option[String], days: Option[String], format: String)
+GET    /availableSources/v0.:format    controllers.ClimateNormalsController.getSources(sources: Option[String], elements: Option[String], validfrom: Option[String], validto: Option[String], format: String)
