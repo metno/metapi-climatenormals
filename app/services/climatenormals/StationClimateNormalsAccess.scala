@@ -62,7 +62,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         s"$normalsTableAlias.elem_code IN (${legacyCodes.map(s => s"'$s'").mkString(",") })"
       }
       case Some(x) => { // add an OR-expression for every legacy code that matches at least one of the input elements
-        val elemList = x.split(",")
+        val elemList = x.split(",").map(_.trim)
         val result = legacyCodes.foldLeft("") { (acc, cur) =>
           acc + s"${
             if (elemList.exists(e => cur.toLowerCase.matches(e.toLowerCase.replace("*", ".*"))))
