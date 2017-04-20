@@ -58,7 +58,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     // scalastyle:off line.size.limit
     @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.", required = true)
     sources: String,
-    @ApiParam(value = "The elements to get climate normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported: TANM, TAXM, UM, and TAM_DAY_STDEV for month normals, and TAM and RR_ACC for day normals. If left out, climate normals for all available elements will be returned.")
+    @ApiParam(value = "The elements to get climate normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported. Use separate resources to get available legacy codes for <a href=reference#/climatenormals/getMonthElements>month</a> and <a href=reference#/climatenormals/getDayElements>day</a> normals. Use the <a href=reference#/elements>elements</a> resource to translate legacy codes to alternative names.")
     elements: Option[String],
     @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, climate normals valid only before this year will not be returned.")
     validfrom: Option[String],
@@ -120,7 +120,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     // scalastyle:off line.size.limit
     @ApiParam(value = "The sources to get information for as a comma-separated list. Each source should be of the form SN&lt;number&gt;. If left out, all available sources are considered for output.")
     sources: Option[String],
-    @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported: TANM, TAXM, UM, and TAM_DAY_STDEV for month normals, and TAM and RR_ACC for day normals. If specified, only sources that provide climate normals for at least one of these elements are considered for output. Otherwise, there is no restriction on elements.")
+    @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of names with optional wildcard asterisks. For now, only legacy codes are supported. Use separate resources to get available legacy codes for <a href=reference#/climatenormals/getMonthElements>month</a> and <a href=reference#/climatenormals/getDayElements>day</a> normals. Use the <a href=reference#/elements>elements</a> resource to translate legacy codes to alternative names.")
     elements: Option[String],
     @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, a source will not be considered for output if all its climate normals are valid only before this year.")
     validfrom: Option[String],
