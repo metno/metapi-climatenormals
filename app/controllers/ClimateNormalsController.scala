@@ -106,7 +106,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
   @ApiOperation(
     value = "Get available sources for climate normals.",
     notes = "Get available sources for climate normals. To be expanded.",
-    response = classOf[models.ClimateNormalsResponse],
+    response = classOf[models.ClimateNormalsSourcesResponse],
     httpMethod = "GET")
   @ApiResponses(Array(
     // scalastyle:off magic.number
