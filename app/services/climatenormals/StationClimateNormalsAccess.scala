@@ -31,7 +31,7 @@ import play.api.db._
 import anorm._
 import anorm.SqlParser._
 import util.{ Try, Success, Failure }
-import models.{ ClimateNormal, ClimateNormalsSource }
+import models._
 import no.met.data._
 
 import play.Logger
@@ -299,6 +299,8 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
   override def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = climateNormalsExec(qp)
   override def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = climateNormalsSourcesExec(qp)
+  override def monthElements(): List[ClimateNormalsMonthElement] = monthLegacyCodes.map(ClimateNormalsMonthElement(_))
+  override def dayElements(): List[ClimateNormalsDayElement] = dayLegacyCodes.map(ClimateNormalsDayElement(_))
 }
 
 //$COVERAGE-ON$

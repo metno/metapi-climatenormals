@@ -100,4 +100,42 @@ class ControllersSpec extends Specification {
     // TBD: Add more tests!!!
   }
 
+
+  "metapi /climatenormals/availableMonthElements" should {
+
+    "test empty query string" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableMonthElements/v0.jsonld")).get
+      status(response) must equalTo(OK)
+    }
+
+    "test unsupported format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableMonthElements/v0.jsonldx")).get
+      status(response) must equalTo(BAD_REQUEST)
+    }
+
+    "test malformed version/format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableMonthElements/v(0~jsonldx")).get
+      status(response) must equalTo(NOT_FOUND)
+    }
+  }
+
+
+  "metapi /climatenormals/availableDayElements" should {
+
+    "test empty query string" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableDayElements/v0.jsonld")).get
+      status(response) must equalTo(OK)
+    }
+
+    "test unsupported format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableDayElements/v0.jsonldx")).get
+      status(response) must equalTo(BAD_REQUEST)
+    }
+
+    "test malformed version/format" in new WithApplication(TestUtil.app) {
+      val response = route(FakeRequest(GET, "/availableDayElements/v(0~jsonldx")).get
+      status(response) must equalTo(NOT_FOUND)
+    }
+  }
+
 }

@@ -25,7 +25,7 @@
 
 package services.climatenormals
 
-import models.{ ClimateNormal, ClimateNormalsSource }
+import models._
 import scala.util._
 import no.met.data._
 import no.met.geometry._
@@ -62,4 +62,13 @@ trait ClimateNormalsAccess {
     */
   def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource]
 
+  /**
+    * Extracts available month elements for climate normals.
+    */
+  def monthElements(): List[ClimateNormalsMonthElement]
+
+  /**
+    * Extracts available day elements for climate normals.
+    */
+  def dayElements(): List[ClimateNormalsDayElement]
 }

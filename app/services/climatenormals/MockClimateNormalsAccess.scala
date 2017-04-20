@@ -25,7 +25,7 @@
 
 package services.climatenormals
 
-import models.{ ClimateNormal, ClimateNormalsSource }
+import models._
 import no.met.data._
 import scala.util._
 
@@ -47,6 +47,14 @@ class MockClimateNormalsAccess extends ClimateNormalsAccess {
     val srcSpec = SourceSpecification(qp.sources, Some(StationConfig.typeName))
     val stationNumbers = srcSpec.stationNumbers
     List(new ClimateNormalsSource("SN18700", "TANM", 1931, 1960))
+  }
+
+  def monthElements(): List[ClimateNormalsMonthElement] = {
+    List(new ClimateNormalsMonthElement("TANM"))
+  }
+
+  def dayElements(): List[ClimateNormalsDayElement] = {
+    List(new ClimateNormalsDayElement("TAM"))
   }
 
   // scalastyle:on magic.number
