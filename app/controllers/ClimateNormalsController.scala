@@ -58,7 +58,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     // scalastyle:off line.size.limit
     @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.", required = true)
     sources: String,
-    @ApiParam(value = "The elements to get climate normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>. For now, only legacy codes are supported. Use separate resources to get available legacy codes for <a href=reference#/climatenormals/getMonthElements>month</a> and <a href=reference#/climatenormals/getDayElements>day</a> normals. Use the <a href=reference#/elements>elements</a> resource to translate legacy codes to alternative names.")
+    @ApiParam(value = "The elements to get climate normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>.")
     elements: Option[String],
     @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, climate normals valid only before this year will not be returned.")
     validfrom: Option[String],
@@ -116,7 +116,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     // scalastyle:off line.size.limit
     @ApiParam(value = "The sources to get information for as a comma-separated list. Each source should be of the form SN&lt;number&gt;. If left out, all available sources are considered for output.")
     sources: Option[String],
-    @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>. For now, only legacy codes are supported. Use separate resources to get available legacy codes for <a href=reference#/climatenormals/getMonthElements>month</a> and <a href=reference#/climatenormals/getDayElements>day</a> normals. Use the <a href=reference#/elements>elements</a> resource to translate legacy codes to alternative names.")
+    @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>.")
     elements: Option[String],
     @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, a source will not be considered for output if all its climate normals are valid only before this year.")
     validfrom: Option[String],
@@ -159,9 +159,9 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
 
 
   @ApiOperation(
-    value = "Get available month elements for climate normals.",
-    notes = "Get available month elements for climate normals. To be expanded.",
-    response = classOf[models.ClimateNormalsMonthElementsResponse],
+    value = "Get available elements for climate normals.",
+    notes = "Get available elements for climate normals. To be expanded.",
+    response = classOf[models.ClimateNormalsElementsResponse],
     httpMethod = "GET")
   @ApiResponses(Array(
     // scalastyle:off magic.number
@@ -171,7 +171,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     new ApiResponse(code = 500, message = "Internal server error."))
     // scalastyle:on magic.number
   )
-  def getMonthElements( // scalastyle:ignore public.methods.have.type
+  def getElements( // scalastyle:ignore public.methods.have.type
     // scalastyle:off line.size.limit
     @ApiParam(value = "The output format of the result.",
       allowableValues = "jsonld",
@@ -185,65 +185,15 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
       // ensure that the query string contains supported fields only
       QueryStringUtil.ensureSubset(Set(), request.queryString.keySet)
 
-      climateNormalsAccess.monthElements()
+      climateNormalsAccess.elements()
     } match {
       case Success(data) =>
         if (data isEmpty) {
-          Error.error(NOT_FOUND, Option("No month elements available"), None, start)
+          Error.error(NOT_FOUND, Option("No elements available"), None, start)
         } else {
           format.toLowerCase() match {
             case "jsonld" => Ok(
-              new ClimateNormalsMonthElementsJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals.availablemonthelements-v0+json"
-            case x => Error.error(BAD_REQUEST, Some(s"Invalid output format: $x"), Some("Supported output formats: jsonld"), start)
-          }
-        }
-      case Failure(x: BadRequestException) =>
-        Error.error(BAD_REQUEST, Some(x getLocalizedMessage), x help, start)
-      case Failure(x) => {
-        //$COVERAGE-OFF$
-        Logger.error(x.getLocalizedMessage)
-        Error.error(INTERNAL_SERVER_ERROR, Some("An internal error occurred"), None, start)
-        //$COVERAGE-ON$
-      }
-    }
-  }
-
-  @ApiOperation(
-    value = "Get available day elements for climate normals.",
-    notes = "Get available day elements for climate normals. To be expanded.",
-    response = classOf[models.ClimateNormalsDayElementsResponse],
-    httpMethod = "GET")
-  @ApiResponses(Array(
-    // scalastyle:off magic.number
-    new ApiResponse(code = 400, message = "Invalid parameter value or malformed request."),
-    new ApiResponse(code = 401, message = "Unauthorized client ID."),
-    new ApiResponse(code = 404, message = "No data was found for this combination of query parameters."),
-    new ApiResponse(code = 500, message = "Internal server error."))
-    // scalastyle:on magic.number
-  )
-  def getDayElements( // scalastyle:ignore public.methods.have.type
-    // scalastyle:off line.size.limit
-    @ApiParam(value = "The output format of the result.",
-      allowableValues = "jsonld",
-      defaultValue = "jsonld")
-    format: String) = no.met.security.AuthorizedAction { implicit request =>
-    // scalastyle:on line.size.limit
-
-    val start = DateTime.now(DateTimeZone.UTC) // start the clock
-
-    Try  {
-      // ensure that the query string contains supported fields only
-      QueryStringUtil.ensureSubset(Set(), request.queryString.keySet)
-
-      climateNormalsAccess.dayElements()
-    } match {
-      case Success(data) =>
-        if (data isEmpty) {
-          Error.error(NOT_FOUND, Option("No day elements available"), None, start)
-        } else {
-          format.toLowerCase() match {
-            case "jsonld" => Ok(
-              new ClimateNormalsDayElementsJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals.availabledayelements-v0+json"
+              new ClimateNormalsElementsJsonFormat().format(start, data)) as "application/vnd.no.met.data.climatenormals.availableelements-v0+json"
             case x => Error.error(BAD_REQUEST, Some(s"Invalid output format: $x"), Some("Supported output formats: jsonld"), start)
           }
         }

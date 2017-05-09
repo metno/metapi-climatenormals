@@ -49,12 +49,8 @@ class MockClimateNormalsAccess extends ClimateNormalsAccess {
     List(new ClimateNormalsSource("SN18700", "mean(min(air_temperature P1D) P1M)", 1931, 1960))
   }
 
-  def monthElements(): List[ClimateNormalsMonthElement] = {
-    List(new ClimateNormalsMonthElement("mean(min(air_temperature P1D) P1M)"))
-  }
-
-  def dayElements(): List[ClimateNormalsDayElement] = {
-    List(new ClimateNormalsDayElement("mean(air_temperature P1D)"))
+  def elements(): List[ClimateNormalsElement] = {
+    List(new ClimateNormalsElement("mean(min(air_temperature P1D) P1M)"))
   }
 
   // scalastyle:on magic.number

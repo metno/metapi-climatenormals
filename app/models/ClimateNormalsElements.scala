@@ -31,11 +31,11 @@ import java.net.URL
 import com.github.nscala_time.time.Imports._
 import no.met.data.{ApiConstants,BasicResponse}
 
-@ApiModel(description="Data response for climate normals month elements")
-case class ClimateNormalsMonthElementsResponse(
+@ApiModel(description="Data response for climate normals elements")
+case class ClimateNormalsElementsResponse(
   @(ApiModelProperty @field)(name=ApiConstants.CONTEXT_NAME, value=ApiConstants.CONTEXT, example=ApiConstants.METAPI_CONTEXT) context: URL,
   @(ApiModelProperty @field)(
-    name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsMonthElementsResponse") responseType: String,
+    name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsElementsResponse") responseType: String,
   @(ApiModelProperty @field)(value=ApiConstants.API_VERSION, example=ApiConstants.API_VERSION_EXAMPLE) apiVersion: String,
   @(ApiModelProperty @field)(value=ApiConstants.LICENSE, example=ApiConstants.METAPI_LICENSE) license: URL,
   @(ApiModelProperty @field)(value=ApiConstants.CREATED_AT, dataType="String", example=ApiConstants.CREATED_AT_EXAMPLE) createdAt: DateTime,
@@ -47,12 +47,12 @@ case class ClimateNormalsMonthElementsResponse(
   @(ApiModelProperty @field)(value=ApiConstants.NEXT_LINK, example=ApiConstants.NEXT_LINK_EXAMPLE) nextLink: Option[URL],
   @(ApiModelProperty @field)(value=ApiConstants.PREVIOUS_LINK, example=ApiConstants.PREVIOUS_LINK_EXAMPLE) previousLink: Option[URL],
   @(ApiModelProperty @field)(value=ApiConstants.CURRENT_LINK, example=ApiConstants.CURRENT_LINK_EXAMPLE) currentLink: URL,
-  @(ApiModelProperty @field)(value=ApiConstants.DATA) data: Seq[ClimateNormalsMonthElement]
+  @(ApiModelProperty @field)(value=ApiConstants.DATA) data: Seq[ClimateNormalsElement]
 )
 extends BasicResponse(
   context, responseType, apiVersion, license, createdAt, queryTime, currentItemCount, itemsPerPage, offset, totalItemCount, nextLink, previousLink, currentLink)
 
-@ApiModel(description="Metadata for a single climate normals month element")
-case class ClimateNormalsMonthElement(
-    @(ApiModelProperty @field)(value="Element id.", example="TANM") elementId: String
+@ApiModel(description="Metadata for a single climate normals element")
+case class ClimateNormalsElement(
+    @(ApiModelProperty @field)(value="Element id.", example="mean(max(air_temperature P1D) P1M)") elementId: String
 )

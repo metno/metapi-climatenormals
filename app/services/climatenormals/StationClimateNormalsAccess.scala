@@ -278,8 +278,8 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
   override def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = climateNormalsExec(qp)
   override def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = climateNormalsSourcesExec(qp)
-  override def monthElements(): List[ClimateNormalsMonthElement] = monthElemMap.keys.toList.map(ClimateNormalsMonthElement(_))
-  override def dayElements(): List[ClimateNormalsDayElement] = dayElemMap.keys.toList.map(ClimateNormalsDayElement(_))
+  override def elements(): List[ClimateNormalsElement] =
+    monthElemMap.keys.toList.map(ClimateNormalsElement(_)) ++ dayElemMap.keys.toList.map(ClimateNormalsElement(_))
 }
 
 //$COVERAGE-ON$

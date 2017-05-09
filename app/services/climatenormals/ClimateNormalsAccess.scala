@@ -62,12 +62,7 @@ trait ClimateNormalsAccess {
   def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource]
 
   /**
-    * Extracts available month elements for climate normals.
+    * Extracts available elements for climate normals.
     */
-  def monthElements(): List[ClimateNormalsMonthElement]
-
-  /**
-    * Extracts available day elements for climate normals.
-    */
-  def dayElements(): List[ClimateNormalsDayElement]
+  def elements(): List[ClimateNormalsElement]
 }
