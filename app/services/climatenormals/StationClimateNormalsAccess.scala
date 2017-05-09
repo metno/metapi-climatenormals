@@ -145,7 +145,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
     }
 
     private def getMainQuery(
-      table: String, sourceQ: String, elemQ: String, validFromQ: String, validToQ: String, monthQ: String, dayQ: Option[String] = None) = {
+      table: String, sourceQ: String, elemQ: String, validFromQ: String, validToQ: String, hasDay: Boolean) = {
       s"""
          |SELECT
          |  *
@@ -156,38 +156,13 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
          |    $normalsTableAlias.fyear AS validfrom,
          |    $normalsTableAlias.tyear AS validto,
          |    $normalsTableAlias.month AS month,
-         |    ${dayQ match { case Some(x) => s"$normalsTableAlias.day"; case None => "NULL" }} AS day,
+         |    ${if (hasDay) s"$normalsTableAlias.day" else "NULL"} AS day,
          |    $normalsTableAlias.normal AS normal
          |  FROM $table $normalsTableAlias
-         |  WHERE $sourceQ AND $elemQ AND $validFromQ AND $validToQ AND $monthQ${dayQ match { case Some(x) => s" AND $x"; case None => "" }}
+         |  WHERE $sourceQ AND $elemQ AND $validFromQ AND $validToQ
          |) t1
-         |ORDER BY sourceid, elementid, validfrom, validto, month${dayQ match {case Some(x) => ", day"; case None => "" }}
+         |ORDER BY sourceid, elementid, validfrom, validto, month${if (hasDay) ", day" else "" }
       """.stripMargin
-    }
-
-    // Returns a sorted list of integers from an input string of the form "1,3,5-7" (i.e. a comma-separated list of integers or integer ranges).
-    private def getIntList(os: Option[String], min: Int, max: Int, itype: String): List[Int] = {
-
-      def toIntSet(s: String): Set[Int] = {
-        val psingle = "([0-9]+)".r
-        val prange = "([0-9]+)-([0-9]+)".r
-        s.trim match {
-          case prange(a,b) => (a.toInt to b.toInt).toSet
-          case psingle(a) => Set[Int](a.toInt)
-          case _ => throw new BadRequestException(s"$itype: syntax error: $s (not of the form <int> or <int1>-<int2>)")
-        }
-      }
-
-      os match {
-        case Some(s) => {
-          val list = s.split(",").foldLeft(Set[Int]()) { (acc, cur) => acc ++ toIntSet(cur) }.toList.sorted
-          if (list.nonEmpty && ((list.head < min) || (list.last > max))) {
-            throw new BadRequestException(s"$itype outside valid range [$min, $max]")
-          }
-          list
-        }
-        case None => List[Int]()
-      }
     }
 
     def apply(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = {
@@ -210,21 +185,15 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
       val validFromQ = getValidYearBoundQ(qp.validFrom, "validfrom")
       val validToQ = getValidYearBoundQ(qp.validTo, "validto")
 
-      val months = getIntList(qp.months, 1, 12, "months")
-      val monthQ = if (months.isEmpty) "TRUE" else s"month IN (${months.mkString(",")})"
-
-      val days = getIntList(qp.days, 1, 31, "days")
-      val dayQ = if (days.isEmpty) "TRUE" else s"day IN (${days.mkString(",")})"
-
       val monthNormals = DB.withConnection("kdvh") { implicit connection =>
-        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, validFromQ, validToQ, monthQ)
+        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, validFromQ, validToQ, false)
         //Logger.debug("--------- queryMonth:")
         //Logger.debug(queryMonth)
         SQL(queryMonth).as( parser * )
       }
 
       val dayNormals = DB.withConnection("kdvh") { implicit connection =>
-        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, validFromQ, validToQ, monthQ, Some(dayQ))
+        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, validFromQ, validToQ, true)
         //Logger.debug("--------- queryDay:")
         //Logger.debug(queryDay)
         SQL(queryDay).as( parser * )

@@ -35,8 +35,7 @@ import no.met.geometry._
  * Holds query string parameters from the original request for the base endpoint.
  */
 case class ClimateNormalsQueryParameters(
-  sources: String, elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None,
-  months: Option[String] = None, days: Option[String] = None)
+  sources: String, elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None)
 
 
 /**
