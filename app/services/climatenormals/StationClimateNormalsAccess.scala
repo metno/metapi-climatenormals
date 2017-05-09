@@ -44,31 +44,41 @@ import play.Logger
  */
 class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
-  // supported element legacy codes
-  private val monthLegacyCodes = List("TANM", "TAXM", "UM", "TAM_DAY_STDEV")
-  private val dayLegacyCodes = List("TAM", "RR_ACC")
+  // supported element IDs with corresponding legacy codes (### hard-coded for now)
+  private val monthElemMap: Map[String, String] = Map(
+    "mean(min(air_temperature P1D) P1M)" -> "TANM",
+    "mean(max(air_temperature P1D) P1M)" -> "TAXM",
+    "mean(relative_humidity P1M)" -> "UM",
+    "standard_deviation(mean(air_temperature P1D) P1M)" -> "TAM_DAY_STDEV"
+  )
+  private val invMonthElemMap = monthElemMap.map(_.swap) // ### WARNING: This assumes that monthElemMap is a one-to-one relation
+  //
+  private val dayElemMap: Map[String, String] = Map(
+    "mean(air_temperature P1D)" -> "TAM",
+    "sum_until_day_of_year(precipitation_amount P1D)" -> "RR_ACC"
+  )
+  private val invDayElemMap = dayElemMap.map(_.swap) // ### WARNING: This assumes that dayElemMap is a one-to-one relation
+  //
+  private def fromLegacyElem(legacyElem: String) = if (invMonthElemMap.contains(legacyElem)) invMonthElemMap(legacyElem) else invDayElemMap(legacyElem)
 
   private val normalsTableAlias = "nta"
 
 
   // Generates the element part of the WHERE clause.
-  private def getElementQ(elements: Option[String], legacyCodes: List[String]): String = {
-    // NOTE: For now we only support the provided legacyCodes directly in the elements parameter in the query string.
-    // Later, the user should be allowed to specify alternative names, but then a translation from the elements database
-    // (possibly indirectly via the elements/ service) is required.
-
+  private def getElementQ(elements: Option[String], suppElems: Map[String, String]): String = {
     elements match {
       case None => { // ignore element filtering, i.e. select all available elements
-        s"$normalsTableAlias.elem_code IN (${legacyCodes.map(s => s"'$s'").mkString(",") })"
+        s"$normalsTableAlias.elem_code IN (${suppElems.values.toSet.toList.map((s: String) => s"'$s'").mkString(",") })"
       }
       case Some(x) => { // add an OR-expression for every legacy code that matches at least one of the input elements
         val elemList = x.split(",").map(_.trim)
-        val result = legacyCodes.foldLeft("") { (acc, cur) =>
+        val result = suppElems.keys.foldLeft("") { (acc, cur) =>
           acc + s"${
-            if (elemList.exists(e => cur.toLowerCase.matches(e.toLowerCase.replace("*", ".*"))))
-              s"${if (acc == "") "" else " OR "}$normalsTableAlias.elem_code='$cur'"
-            else
+            if (elemList.exists(e => cur.toLowerCase.matches(e.toLowerCase.replace("*", ".*")))) {
+              s"${if (acc == "") "" else " OR "}$normalsTableAlias.elem_code='${suppElems(cur)}'"
+            } else {
               ""
+            }
           }"
         }
         if (result == "") "FALSE" else s"($result)"
@@ -124,7 +134,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         case sourceid~elementid~validfrom~validto~month~day~normal
         => ClimateNormal(
           sourceid,
-          elementid,
+          fromLegacyElem(elementid),
           validfrom,
           validto,
           month,
@@ -188,13 +198,13 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
       val sourceQ = s"stnr IN (${stations.mkString(",")})"
 
-      val elemMonthQ = getElementQ(qp.elements, monthLegacyCodes)
-      val elemDayQ = getElementQ(qp.elements, dayLegacyCodes)
+      val elemMonthQ = getElementQ(qp.elements, monthElemMap)
+      val elemDayQ = getElementQ(qp.elements, dayElemMap)
 
       if ((elemMonthQ.toUpperCase == "FALSE") && (elemDayQ.toUpperCase == "FALSE")) {
         throw new BadRequestException(
           s"No valid elements specified",
-          Some(s"valid elements for month normals: ${monthLegacyCodes.mkString(", ")}; valid elements for day normals: ${dayLegacyCodes.mkString(", ")}"))
+          Some(s"valid elements for month normals: ${monthElemMap.keys.mkString(", ")}; valid elements for day normals: ${dayElemMap.keys.mkString(", ")}"))
       }
 
       val validFromQ = getValidYearBoundQ(qp.validFrom, "validfrom")
@@ -235,7 +245,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         case sourceid~elementid~validfrom~validto
         => ClimateNormalsSource(
           sourceid,
-          elementid,
+          fromLegacyElem(elementid),
           validfrom,
           validto
         )
@@ -266,13 +276,13 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
       val sourceQ = if (stations.nonEmpty) s"stnr IN (${stations.mkString(",")})" else "TRUE"
 
-      val elemMonthQ = getElementQ(qp.elements, monthLegacyCodes)
-      val elemDayQ = getElementQ(qp.elements, dayLegacyCodes)
+      val elemMonthQ = getElementQ(qp.elements, monthElemMap)
+      val elemDayQ = getElementQ(qp.elements, dayElemMap)
 
       if ((elemMonthQ.toUpperCase == "FALSE") && (elemDayQ.toUpperCase == "FALSE")) {
         throw new BadRequestException(
           s"No valid elements specified",
-          Some(s"valid elements for month normals: ${monthLegacyCodes.mkString(", ")}; valid elements for day normals: ${dayLegacyCodes.mkString(", ")}"))
+          Some(s"valid elements for month normals: ${monthElemMap.keys.mkString(", ")}; valid elements for day normals: ${dayElemMap.keys.mkString(", ")}"))
       }
 
       val validFromQ = getValidYearBoundQ(qp.validFrom, "validfrom")
@@ -299,8 +309,8 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
   override def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = climateNormalsExec(qp)
   override def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = climateNormalsSourcesExec(qp)
-  override def monthElements(): List[ClimateNormalsMonthElement] = monthLegacyCodes.map(ClimateNormalsMonthElement(_))
-  override def dayElements(): List[ClimateNormalsDayElement] = dayLegacyCodes.map(ClimateNormalsDayElement(_))
+  override def monthElements(): List[ClimateNormalsMonthElement] = monthElemMap.keys.toList.map(ClimateNormalsMonthElement(_))
+  override def dayElements(): List[ClimateNormalsDayElement] = dayElemMap.keys.toList.map(ClimateNormalsDayElement(_))
 }
 
 //$COVERAGE-ON$
