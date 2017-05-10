@@ -71,51 +71,32 @@ class ControllersSpec extends Specification {
     // TBD: Add more tests!!!
   }
 
-  "metapi /climatenormals/availableSources" should {
+  "metapi /climatenormals/available" should {
 
     "test empty query string" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableSources/v0.jsonld")).get
+      val response = route(FakeRequest(GET, "/available/v0.jsonld")).get
       status(response) must equalTo(OK)
     }
 
     "test unsupported format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableSources/v0.jsonldx")).get
+      val response = route(FakeRequest(GET, "/available/v0.jsonldx")).get
       status(response) must equalTo(BAD_REQUEST)
     }
 
     "test malformed version/format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableSources/v(0~jsonldx")).get
+      val response = route(FakeRequest(GET, "/available/v(0~jsonldx")).get
       status(response) must equalTo(NOT_FOUND)
     }
 
     "test single source" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableSources/v0.jsonld?sources=SN18700")).get
+      val response = route(FakeRequest(GET, "/available/v0.jsonld?sources=SN18700")).get
       status(response) must equalTo(OK)
       val json = Json.parse(contentAsString(response))
-      contentType(response) must beSome.which(_ == "application/vnd.no.met.data.climatenormals.availablesources-v0+json")
+      contentType(response) must beSome.which(_ == "application/vnd.no.met.data.climatenormals.available-v0+json")
       (json \ "data").as[JsArray].value.size must equalTo(1)
     }
 
     // TBD: Add more tests!!!
-  }
-
-
-  "metapi /climatenormals/availableElements" should {
-
-    "test empty query string" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableElements/v0.jsonld")).get
-      status(response) must equalTo(OK)
-    }
-
-    "test unsupported format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableElements/v0.jsonldx")).get
-      status(response) must equalTo(BAD_REQUEST)
-    }
-
-    "test malformed version/format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableElements/v(0~jsonldx")).get
-      status(response) must equalTo(NOT_FOUND)
-    }
   }
 
 }

@@ -52,11 +52,11 @@ case class ClimateNormalsResponse(
 extends BasicResponse(
   context, responseType, apiVersion, license, createdAt, queryTime, currentItemCount, itemsPerPage, offset, totalItemCount, nextLink, previousLink, currentLink)
 
-@ApiModel(description="Metadata for a single climate normal value")
+@ApiModel(description="A single climate normal value with metadata")
 case class ClimateNormal(
     @(ApiModelProperty @field)(value="Source id.", example="SN18700") sourceId: String,
-    @(ApiModelProperty @field)(value="Element id.", example="TANM") elementId: String,
-    @(ApiModelProperty @field)(value="Validity period.", example="1931/1960") period: String,
+    @(ApiModelProperty @field)(value="Element id.", example="mean(min(air_temperature P1D) P1M)") elementId: String,
+    @(ApiModelProperty @field)(value="Validity period.", example="1961/1990") period: String,
     @(ApiModelProperty @field)(value="Month.", example="3") month: Int,
     @(ApiModelProperty @field)(value="Day of month (omitted if n/a).", example="31") day: Option[Int],
     @(ApiModelProperty @field)(value="Normal value.", example="5.2") normal: Double

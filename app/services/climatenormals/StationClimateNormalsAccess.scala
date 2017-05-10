@@ -86,14 +86,6 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
     }
   }
 
-  // Generates the period matching part of the WHERE clause.
-  private def getPeriodQ(s: Option[String]): String = {
-    s match {
-      case None => "TRUE"
-      case Some(ps) => s"'${ps}'=${normalsTableAlias}.fyear::text||'/'||${normalsTableAlias}.tyear::text"
-    }
-  }
-
   // For now, define a local function that checks that a list of stations contains only non-negative integeres
   // (and not for example '18700:1' or '18700:all'). Later, such a restriction could be included in the SourceSpecification API ... TBD
   private def ensureStationsAreNonNegativeInts(stations: Seq[String]) = {
@@ -128,6 +120,22 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
           day,
           normal
         )
+      }
+    }
+
+    // Generates the period matching part of the WHERE clause.
+    private def getPeriodQ(s: Option[String]): String = {
+      s match {
+        case None => "TRUE"
+        //case Some(ps) => s"'${ps}'=${normalsTableAlias}.fyear::text||'/'||${normalsTableAlias}.tyear::text"
+        case Some(ps) => {
+          val validPeriod = s"""(\\d\\d\\d\\d/\\d\\d\\d\\d)""".r
+          s"${normalsTableAlias}.fyear::text||'/'||${normalsTableAlias}.tyear::text = '${
+            ps.trim match {
+              case validPeriod(vp) => vp
+              case _ => throw new BadRequestException(s"Invalid period", Some(s"Supported format: yyyy/yyyy"))
+            }}'"
+        }
       }
     }
 
@@ -190,23 +198,39 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
   }
 
 
-  private object climateNormalsSourcesExec {
+  private object climateNormalsAvailableExec {
 
-    private val parser: RowParser[ClimateNormalsSource] = {
+    private val parser: RowParser[ClimateNormalsAvailable] = {
       get[String]("sourceid") ~
         get[String]("elementid") ~
         get[Int]("validfrom") ~
         get[Int]("validto") map {
         case sourceid~elementid~validfrom~validto
-        => ClimateNormalsSource(
-          sourceid,
-          fromLegacyElem(elementid),
-          s"$validfrom/$validto"
+        => ClimateNormalsAvailable(
+          Some(sourceid),
+          Some(fromLegacyElem(elementid)),
+          Some(s"$validfrom/$validto")
         )
       }
     }
 
-    private def getMainQuery(table: String, sourceQ: String, elemQ: String, periodQ: String) = {
+    // Generates the periods matching part of the WHERE clause.
+    private def getPeriodsQ(s: Option[String]): String = {
+      s match {
+        case None => "TRUE"
+        case Some(ps) => {
+          val validPeriod = s"""(\\d\\d\\d\\d/\\d\\d\\d\\d)""".r
+          s"${normalsTableAlias}.fyear::text||'/'||${normalsTableAlias}.tyear::text IN (${
+            ps.split(",").map(p => s"'${p.trim match {
+              case validPeriod(vp) => vp
+              case _ => throw new BadRequestException(s"Invalid period", Some(s"Supported format: yyyy/yyyy"))
+            }}'").mkString(", ")
+          })"
+        }
+      }
+    }
+
+    private def getMainQuery(table: String, sourceQ: String, elemQ: String, periodsQ: String) = {
       s"""
          |SELECT
          |  *
@@ -217,13 +241,13 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
          |    $normalsTableAlias.fyear AS validfrom,
          |    $normalsTableAlias.tyear AS validto
          |  FROM $table $normalsTableAlias
-         |  WHERE $sourceQ AND $elemQ AND $periodQ
+         |  WHERE $sourceQ AND $elemQ AND $periodsQ
          |) t1
          |ORDER BY sourceid, elementid, validfrom, validto
       """.stripMargin
     }
 
-    def apply(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = {
+    def apply(qp: ClimateNormalsAvailableQueryParameters): List[ClimateNormalsAvailable] = {
 
       val stations = SourceSpecification(qp.sources, Some(StationConfig.typeName)).stationNumbers
       ensureStationsAreNonNegativeInts(stations)
@@ -239,31 +263,45 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
           Some(s"valid elements for month normals: ${monthElemMap.keys.mkString(", ")}; valid elements for day normals: ${dayElemMap.keys.mkString(", ")}"))
       }
 
-      val periodQ = getPeriodQ(qp.period)
+      val periodsQ = getPeriodsQ(qp.periods)
 
-      val monthSources = DB.withConnection("kdvh") { implicit connection =>
-        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodQ)
+      val fields :Set[String] = FieldSpecification.parse(qp.fields)
+      val suppFields = Set("sourceid", "elementid", "period")
+      fields.foreach(f => if (!suppFields.contains(f)) throw new BadRequestException(s"Unsupported field: $f", Some(s"Supported fields: ${suppFields.mkString(", ")}")))
+
+      val availableMonthCombos = DB.withConnection("kdvh") { implicit connection =>
+        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodsQ)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
         SQL(queryMonth).as( parser * )
       }
 
-      val daySources = DB.withConnection("kdvh") { implicit connection =>
-        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodQ)
+      val availableDayCombos = DB.withConnection("kdvh") { implicit connection =>
+        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodsQ)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
         SQL(queryDay).as( parser * )
       }
 
-      monthSources ++ daySources
+
+      // filter combos on fields
+
+      val omitSourceId = fields.nonEmpty && !fields.contains("sourceid")
+      val omitElementId = fields.nonEmpty && !fields.contains("elementid")
+      val omitPeriod = fields.nonEmpty && !fields.contains("period")
+
+      val combos = availableMonthCombos ++ availableDayCombos
+      combos.map(s => s.copy(
+        sourceId = if (omitSourceId) None else s.sourceId,
+        elementId = if (omitElementId) None else s.elementId,
+        period = if (omitPeriod) None else s.period
+      )).distinct.sortBy(s => (s.sourceId, s.elementId, s.period))
     }
   }
 
 
   override def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = climateNormalsExec(qp)
-  override def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = climateNormalsSourcesExec(qp)
-  override def elements(): List[ClimateNormalsElement] =
-    monthElemMap.keys.toList.map(ClimateNormalsElement(_)) ++ dayElemMap.keys.toList.map(ClimateNormalsElement(_))
+  override def available(qp: ClimateNormalsAvailableQueryParameters): List[ClimateNormalsAvailable] = climateNormalsAvailableExec(qp)
 }
 
 //$COVERAGE-ON$

@@ -39,8 +39,7 @@ import scala.util._
   */
 class ProdClimateNormalsAccess extends ClimateNormalsAccess {
   def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal] = ProdClimateNormalsAccess.stationAccess.normals(qp)
-  def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = ProdClimateNormalsAccess.stationAccess.sources(qp)
-  def elements(): List[ClimateNormalsElement] = ProdClimateNormalsAccess.stationAccess.elements()
+  def available(qp: ClimateNormalsAvailableQueryParameters): List[ClimateNormalsAvailable] = ProdClimateNormalsAccess.stationAccess.available(qp)
 }
 
 

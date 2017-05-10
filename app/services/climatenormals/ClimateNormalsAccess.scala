@@ -40,7 +40,7 @@ case class ClimateNormalsQueryParameters(sources: String, elements: Option[Strin
 /**
   * Holds query string parameters from the original request for the availableSources/ endpoint.
   */
-case class ClimateNormalsSourcesQueryParameters(sources: Option[String], elements: Option[String] = None, period: Option[String] = None)
+case class ClimateNormalsAvailableQueryParameters(sources: Option[String], elements: Option[String] = None, periods: Option[String] = None, fields: Option[String] = None)
 
 
 /**
@@ -55,12 +55,7 @@ trait ClimateNormalsAccess {
   def normals(qp: ClimateNormalsQueryParameters): List[ClimateNormal]
 
   /**
-    * Extracts available sources for climate normals based on query parameters.
+    * Extracts available metadata combinations for climate normals based on query parameters.
     */
-  def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource]
-
-  /**
-    * Extracts available elements for climate normals.
-    */
-  def elements(): List[ClimateNormalsElement]
+  def available(qp: ClimateNormalsAvailableQueryParameters): List[ClimateNormalsAvailable]
 }

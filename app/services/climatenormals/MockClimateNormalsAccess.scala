@@ -43,14 +43,10 @@ class MockClimateNormalsAccess extends ClimateNormalsAccess {
     List(new ClimateNormal("SN18700", "mean(min(air_temperature P1D) P1M)", "1931/1960", 3, Some(31), 5.2))
   }
 
-  def sources(qp: ClimateNormalsSourcesQueryParameters): List[ClimateNormalsSource] = {
+  def available(qp: ClimateNormalsAvailableQueryParameters): List[ClimateNormalsAvailable] = {
     val srcSpec = SourceSpecification(qp.sources, Some(StationConfig.typeName))
     val stationNumbers = srcSpec.stationNumbers
-    List(new ClimateNormalsSource("SN18700", "mean(min(air_temperature P1D) P1M)", "1931/1960"))
-  }
-
-  def elements(): List[ClimateNormalsElement] = {
-    List(new ClimateNormalsElement("mean(min(air_temperature P1D) P1M)"))
+    List(new ClimateNormalsAvailable(Some("SN18700"), Some("mean(min(air_temperature P1D) P1M)"), Some("1931/1960")))
   }
 
   // scalastyle:on magic.number
