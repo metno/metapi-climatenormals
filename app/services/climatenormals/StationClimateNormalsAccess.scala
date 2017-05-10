@@ -74,7 +74,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         val elemList = x.split(",").map(_.trim)
         val result = suppElems.keys.foldLeft("") { (acc, cur) =>
           acc + s"${
-            if (elemList.exists(e => cur.toLowerCase.matches(e.toLowerCase.replace("*", ".*")))) {
+            if (elemList.exists(e => cur.toLowerCase.matches(e.toLowerCase.replace("*", ".*").replace("(", "\\(").replace(")", "\\)")))) {
               s"${if (acc == "") "" else " OR "}$normalsTableAlias.elem_code='${suppElems(cur)}'"
             } else {
               ""
