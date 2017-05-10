@@ -60,10 +60,8 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     sources: String,
     @ApiParam(value = "The elements to get climate normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>.")
     elements: Option[String],
-    @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, climate normals valid only before this year will not be returned.")
-    validfrom: Option[String],
-    @ApiParam(value = "The end year of the validity period as a four-digit integer, e.g. '1975'. If specified, climate normals valid only after this year will not be returned.")
-    validto: Option[String],
+    @ApiParam(value = "The validity period, e.g. '1931/1960'. If specified, only climate normals for this period will be returned.")
+    period: Option[String],
     @ApiParam(value = "The output format of the result.",
       allowableValues = "jsonld",
       defaultValue = "jsonld")
@@ -74,9 +72,9 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
 
     Try  {
       // ensure that the query string contains supported fields only
-      QueryStringUtil.ensureSubset(Set("sources", "elements", "validfrom", "validto"), request.queryString.keySet)
+      QueryStringUtil.ensureSubset(Set("sources", "elements", "period"), request.queryString.keySet)
 
-      climateNormalsAccess.normals(ClimateNormalsQueryParameters(sources, elements, validfrom, validto))
+      climateNormalsAccess.normals(ClimateNormalsQueryParameters(sources, elements, period))
     } match {
       case Success(data) =>
         if (data isEmpty) {
@@ -118,10 +116,8 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
     sources: Option[String],
     @ApiParam(value = "The elements that the sources must provide normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>.")
     elements: Option[String],
-    @ApiParam(value = "The start year of the validity period as a four-digit integer, e.g. '1955'. If specified, a source will not be considered for output if all its climate normals are valid only before this year.")
-    validfrom: Option[String],
-    @ApiParam(value = "The end year of the validity period as a four-digit integer, e.g. '1975'. If specified, a source will not be considered for output if all its climate normals are valid only after this year.")
-    validto: Option[String],
+    @ApiParam(value = "The validity period, e.g. '1931/1960'. If specified, only climate normals for this period will be returned.")
+    period: Option[String],
     @ApiParam(value = "The output format of the result.",
       allowableValues = "jsonld",
       defaultValue = "jsonld")
@@ -132,9 +128,9 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
 
     Try  {
       // ensure that the query string contains supported fields only
-      QueryStringUtil.ensureSubset(Set("sources", "elements", "validfrom", "validto"), request.queryString.keySet)
+      QueryStringUtil.ensureSubset(Set("sources", "elements", "period"), request.queryString.keySet)
 
-      climateNormalsAccess.sources(ClimateNormalsSourcesQueryParameters(sources, elements, validfrom, validto))
+      climateNormalsAccess.sources(ClimateNormalsSourcesQueryParameters(sources, elements, period))
     } match {
       case Success(data) =>
         if (data isEmpty) {

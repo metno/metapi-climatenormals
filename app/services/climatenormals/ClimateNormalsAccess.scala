@@ -34,15 +34,13 @@ import no.met.geometry._
 /**
  * Holds query string parameters from the original request for the base endpoint.
  */
-case class ClimateNormalsQueryParameters(
-  sources: String, elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None)
+case class ClimateNormalsQueryParameters(sources: String, elements: Option[String] = None, period: Option[String] = None)
 
 
 /**
   * Holds query string parameters from the original request for the availableSources/ endpoint.
   */
-case class ClimateNormalsSourcesQueryParameters(
-  sources: Option[String], elements: Option[String] = None, validFrom: Option[String] = None, validTo: Option[String] = None)
+case class ClimateNormalsSourcesQueryParameters(sources: Option[String], elements: Option[String] = None, period: Option[String] = None)
 
 
 /**

@@ -86,23 +86,11 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
     }
   }
 
-  // Generates a year bound part of the WHERE clause. s is the year while btype is either "validfrom" or "validto".
-  private def getValidYearBoundQ(s: Option[String], btype: String): String = {
-
-    def parseYear(ys: String, min: Int, max: Int) = {
-      val y = ys.toInt
-      if (y < min || y > max) throw new Exception(s"year outside valid range [$min, $max]: $ys")
-      y
-    }
-
+  // Generates the period matching part of the WHERE clause.
+  private def getPeriodQ(s: Option[String]): String = {
     s match {
-      case None => "TRUE" // ignore this bound type
-      case Some(ys) => {
-        Try(parseYear(ys, 0, 9999)) match {
-          case Failure(e) => throw new BadRequestException(s"Failed to parse $btype value: ${e.getMessage}")
-          case Success(y) => s"$y ${if (btype.toLowerCase == "validfrom") "< tyear" else "> fyear"}"
-        }
-      }
+      case None => "TRUE"
+      case Some(ps) => s"'${ps}'=${normalsTableAlias}.fyear::text||'/'||${normalsTableAlias}.tyear::text"
     }
   }
 
@@ -135,8 +123,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         => ClimateNormal(
           sourceid,
           fromLegacyElem(elementid),
-          validfrom,
-          validto,
+          s"$validfrom/$validto",
           month,
           day,
           normal
@@ -145,7 +132,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
     }
 
     private def getMainQuery(
-      table: String, sourceQ: String, elemQ: String, validFromQ: String, validToQ: String, hasDay: Boolean) = {
+      table: String, sourceQ: String, elemQ: String, periodQ: String, hasDay: Boolean) = {
       s"""
          |SELECT
          |  *
@@ -159,7 +146,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
          |    ${if (hasDay) s"$normalsTableAlias.day" else "NULL"} AS day,
          |    $normalsTableAlias.normal AS normal
          |  FROM $table $normalsTableAlias
-         |  WHERE $sourceQ AND $elemQ AND $validFromQ AND $validToQ
+         |  WHERE $sourceQ AND $elemQ AND $periodQ
          |) t1
          |ORDER BY sourceid, elementid, validfrom, validto, month${if (hasDay) ", day" else "" }
       """.stripMargin
@@ -182,20 +169,19 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
           Some(s"valid elements for month normals: ${monthElemMap.keys.mkString(", ")}; valid elements for day normals: ${dayElemMap.keys.mkString(", ")}"))
       }
 
-      val validFromQ = getValidYearBoundQ(qp.validFrom, "validfrom")
-      val validToQ = getValidYearBoundQ(qp.validTo, "validto")
+      val periodQ = getPeriodQ(qp.period)
 
       val monthNormals = DB.withConnection("kdvh") { implicit connection =>
-        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, validFromQ, validToQ, false)
-        //Logger.debug("--------- queryMonth:")
-        //Logger.debug(queryMonth)
+        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodQ, false)
+//        Logger.debug("--------- queryMonth:")
+//        Logger.debug(queryMonth)
         SQL(queryMonth).as( parser * )
       }
 
       val dayNormals = DB.withConnection("kdvh") { implicit connection =>
-        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, validFromQ, validToQ, true)
-        //Logger.debug("--------- queryDay:")
-        //Logger.debug(queryDay)
+        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodQ, true)
+//        Logger.debug("--------- queryDay:")
+//        Logger.debug(queryDay)
         SQL(queryDay).as( parser * )
       }
 
@@ -215,13 +201,12 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         => ClimateNormalsSource(
           sourceid,
           fromLegacyElem(elementid),
-          validfrom,
-          validto
+          s"$validfrom/$validto"
         )
       }
     }
 
-    private def getMainQuery(table: String, sourceQ: String, elemQ: String, validFromQ: String, validToQ: String) = {
+    private def getMainQuery(table: String, sourceQ: String, elemQ: String, periodQ: String) = {
       s"""
          |SELECT
          |  *
@@ -232,7 +217,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
          |    $normalsTableAlias.fyear AS validfrom,
          |    $normalsTableAlias.tyear AS validto
          |  FROM $table $normalsTableAlias
-         |  WHERE $sourceQ AND $elemQ AND $validFromQ AND $validToQ
+         |  WHERE $sourceQ AND $elemQ AND $periodQ
          |) t1
          |ORDER BY sourceid, elementid, validfrom, validto
       """.stripMargin
@@ -254,18 +239,17 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
           Some(s"valid elements for month normals: ${monthElemMap.keys.mkString(", ")}; valid elements for day normals: ${dayElemMap.keys.mkString(", ")}"))
       }
 
-      val validFromQ = getValidYearBoundQ(qp.validFrom, "validfrom")
-      val validToQ = getValidYearBoundQ(qp.validTo, "validto")
+      val periodQ = getPeriodQ(qp.period)
 
       val monthSources = DB.withConnection("kdvh") { implicit connection =>
-        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, validFromQ, validToQ)
+        val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodQ)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
         SQL(queryMonth).as( parser * )
       }
 
       val daySources = DB.withConnection("kdvh") { implicit connection =>
-        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, validFromQ, validToQ)
+        val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodQ)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
         SQL(queryDay).as( parser * )

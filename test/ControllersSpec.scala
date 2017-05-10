@@ -35,7 +35,6 @@ import TestUtil._
 import no.met.data._
 
 
-// sxxcalastyle:off magic.number
 /*
  * Note that these tests primarily exercise the routes and very basic controller
  * functionality; they are no guarantee that the queries against the database
@@ -101,39 +100,20 @@ class ControllersSpec extends Specification {
   }
 
 
-  "metapi /climatenormals/availableMonthElements" should {
+  "metapi /climatenormals/availableElements" should {
 
     "test empty query string" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableMonthElements/v0.jsonld")).get
+      val response = route(FakeRequest(GET, "/availableElements/v0.jsonld")).get
       status(response) must equalTo(OK)
     }
 
     "test unsupported format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableMonthElements/v0.jsonldx")).get
+      val response = route(FakeRequest(GET, "/availableElements/v0.jsonldx")).get
       status(response) must equalTo(BAD_REQUEST)
     }
 
     "test malformed version/format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableMonthElements/v(0~jsonldx")).get
-      status(response) must equalTo(NOT_FOUND)
-    }
-  }
-
-
-  "metapi /climatenormals/availableDayElements" should {
-
-    "test empty query string" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableDayElements/v0.jsonld")).get
-      status(response) must equalTo(OK)
-    }
-
-    "test unsupported format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableDayElements/v0.jsonldx")).get
-      status(response) must equalTo(BAD_REQUEST)
-    }
-
-    "test malformed version/format" in new WithApplication(TestUtil.app) {
-      val response = route(FakeRequest(GET, "/availableDayElements/v(0~jsonldx")).get
+      val response = route(FakeRequest(GET, "/availableElements/v(0~jsonldx")).get
       status(response) must equalTo(NOT_FOUND)
     }
   }

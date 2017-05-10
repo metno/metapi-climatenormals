@@ -56,6 +56,5 @@ extends BasicResponse(
 case class ClimateNormalsSource(
     @(ApiModelProperty @field)(value="Source id.", example="SN18700") sourceId: String,
     @(ApiModelProperty @field)(value="Element id.", example="TANM") elementId: String,
-    @(ApiModelProperty @field)(value="Start of validity period.", example="1931") validFrom: Int,
-    @(ApiModelProperty @field)(value="End of validity period.", example="1960") validTo: Int
+    @(ApiModelProperty @field)(value="Validity period.", example="1931/1960") period: String
 )
