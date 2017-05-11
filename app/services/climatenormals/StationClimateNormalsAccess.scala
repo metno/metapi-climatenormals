@@ -179,18 +179,18 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
       val periodQ = getPeriodQ(qp.period)
 
-      val monthNormals = DB.withConnection("kdvh") { implicit connection =>
+      val monthNormals = {
         val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodQ, false)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
-        SQL(queryMonth).as( parser * )
+        DBCache.get[ClimateNormal]("kdvh", queryMonth, parser)
       }
 
-      val dayNormals = DB.withConnection("kdvh") { implicit connection =>
+      val dayNormals = {
         val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodQ, true)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
-        SQL(queryDay).as( parser * )
+        DBCache.get[ClimateNormal]("kdvh", queryDay, parser)
       }
 
       monthNormals ++ dayNormals
@@ -269,20 +269,19 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
       val suppFields = Set("sourceid", "elementid", "period")
       fields.foreach(f => if (!suppFields.contains(f)) throw new BadRequestException(s"Unsupported field: $f", Some(s"Supported fields: ${suppFields.mkString(", ")}")))
 
-      val availableMonthCombos = DB.withConnection("kdvh") { implicit connection =>
+      val availableMonthCombos = {
         val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodsQ)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
-        SQL(queryMonth).as( parser * )
+        DBCache.get[ClimateNormalsAvailable]("kdvh", queryMonth, parser)
       }
 
-      val availableDayCombos = DB.withConnection("kdvh") { implicit connection =>
+      val availableDayCombos = {
         val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodsQ)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
-        SQL(queryDay).as( parser * )
+        DBCache.get[ClimateNormalsAvailable]("kdvh", queryDay, parser)
       }
-
 
       // filter combos on fields
 
