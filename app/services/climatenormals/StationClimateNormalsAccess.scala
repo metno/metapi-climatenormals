@@ -110,7 +110,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         get[Int]("validto") ~
         get[Int]("month") ~
         get[Option[Int]]("day") ~
-        get[Double]("normal") map {
+        get[Option[Double]]("normal") map {
         case sourceid~elementid~validfrom~validto~month~day~normal
         => ClimateNormal(
           sourceid,

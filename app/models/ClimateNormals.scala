@@ -59,5 +59,5 @@ case class ClimateNormal(
     @(ApiModelProperty @field)(value="Validity period.", example="1961/1990") period: String,
     @(ApiModelProperty @field)(value="Month.", example="3") month: Int,
     @(ApiModelProperty @field)(value="Day of month (omitted if n/a).", example="31") day: Option[Int],
-    @(ApiModelProperty @field)(value="Normal value.", example="5.2") normal: Double
+    @(ApiModelProperty @field)(value="Normal value (omitted if not found).", example="5.2") normal: Option[Double]
 )
