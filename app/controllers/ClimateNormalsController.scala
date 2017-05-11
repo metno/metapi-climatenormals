@@ -56,7 +56,7 @@ class ClimateNormalsController @Inject()(climateNormalsAccess: ClimateNormalsAcc
   )
   def getClimateNormals( // scalastyle:ignore public.methods.have.type
     // scalastyle:off line.size.limit
-    @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.")
+    @ApiParam(value = "The sources to get climate normals for as a comma-separated list. Each source should be of the form SN&lt;number&gt;.", required = true)
     sources: String,
     @ApiParam(value = "The elements to get climate normals for as a comma-separated list of <a href=concepts#searchfilter>search filters</a>.")
     elements: Option[String],
