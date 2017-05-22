@@ -190,14 +190,14 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodQ, false)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
-        DBCache.get[ClimateNormal]("kdvh", queryMonth, parser)
+        Cache().get[ClimateNormal]("kdvh", queryMonth, parser)
       }
 
       val dayNormals = {
         val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodQ, true)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
-        DBCache.get[ClimateNormal]("kdvh", queryDay, parser)
+        Cache().get[ClimateNormal]("kdvh", queryDay, parser)
       }
 
       monthNormals ++ dayNormals
@@ -280,14 +280,14 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         val queryMonth = getMainQuery("t_normal_month", sourceQ, elemMonthQ, periodsQ)
 //        Logger.debug("--------- queryMonth:")
 //        Logger.debug(queryMonth)
-        DBCache.get[ClimateNormalsAvailable]("kdvh", queryMonth, parser)
+        Cache().get[ClimateNormalsAvailable]("kdvh", queryMonth, parser)
       }
 
       val availableDayCombos = {
         val queryDay = getMainQuery("t_normal_diurnal", sourceQ, elemDayQ, periodsQ)
 //        Logger.debug("--------- queryDay:")
 //        Logger.debug(queryDay)
-        DBCache.get[ClimateNormalsAvailable]("kdvh", queryDay, parser)
+        Cache().get[ClimateNormalsAvailable]("kdvh", queryDay, parser)
       }
 
       // filter combos on fields
@@ -303,6 +303,23 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         period = if (omitPeriod) None else s.period
       )).distinct.sortBy(s => (s.sourceId, s.elementId, s.period))
     }
+  }
+
+  private object Cache {
+    // scalastyle:off magic.number
+
+    // Set the maximum number of items that the cache will accommodate. Upon cache miss, the least recently used item will be thrown out first.
+    // Note the tradeoff between cache performance and memory usage (more items means fewer cache misses).
+    val maxItems: Int = current.configuration.getInt("dbcache.climatenormals.maxitems").getOrElse(100)
+
+    // Set the maximum number of seconds an item is allowed to stay in the cache without being refreshed from the database.
+    // Note the tradeoff between cache performance and getting up-to-date information (database updates relevant to an item may take up to
+    // expireSecs seconds before being reflected in the cache).
+    val expireSecs: Int = current.configuration.getInt("dbcache.climatenormals.expiresecs").getOrElse({ val secsIn24H = 86400; secsIn24H })
+
+    // scalastyle:on magic.number
+    val instance = new DBCache(maxItems, expireSecs)
+    def apply(): DBCache = instance
   }
 
 
