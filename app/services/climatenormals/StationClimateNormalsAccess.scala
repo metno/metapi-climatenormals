@@ -161,7 +161,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
          |    ${if (hasDay) s"$normalsTableAlias.day" else "NULL"} AS day,
          |    $normalsTableAlias.normal AS normal
          |  FROM $table $normalsTableAlias
-         |  WHERE $sourceQ AND $elemQ AND $periodQ
+         |  WHERE $sourceQ AND $elemQ AND $periodQ AND $normalsTableAlias.month < 13 /* by convention, month=13 represents yearly value */
          |) t1
          |ORDER BY sourceid, elementid, validfrom, validto, month${if (hasDay) ", day" else "" }
       """.stripMargin
