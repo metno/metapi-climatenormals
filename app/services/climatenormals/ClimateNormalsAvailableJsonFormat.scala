@@ -70,7 +70,7 @@ class ClimateNormalsAvailableJsonFormat extends BasicJsonFormat {
     val duration = new Duration(DateTime.now.getMillis() - start.getMillis())
     val response = new ClimateNormalsAvailableResponse(
       new URL(ApiConstants.METAPI_CONTEXT),
-      "ClimateNormalsSourcesResponse",
+      "ClimateNormalsAvailableResponse",
       "v0",
       new URL(ApiConstants.METAPI_LICENSE),
       start,

@@ -32,10 +32,11 @@ import com.github.nscala_time.time.Imports._
 import no.met.data.{ApiConstants,BasicResponse}
 import no.met.geometry.Point
 
-@ApiModel(description="Data response for climate normals sources")
+@ApiModel(description="Data response for an available metadata combination for climate normals")
 case class ClimateNormalsAvailableResponse(
   @(ApiModelProperty @field)(name=ApiConstants.CONTEXT_NAME, value=ApiConstants.CONTEXT, example=ApiConstants.METAPI_CONTEXT) context: URL,
-  @(ApiModelProperty @field)(name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsSourcesResponse") responseType: String,
+  @(ApiModelProperty @field)(
+    name=ApiConstants.OBJECT_TYPE_NAME, value=ApiConstants.OBJECT_TYPE, example="ClimateNormalsAvailableResponse") responseType: String,
   @(ApiModelProperty @field)(value=ApiConstants.API_VERSION, example=ApiConstants.API_VERSION_EXAMPLE) apiVersion: String,
   @(ApiModelProperty @field)(value=ApiConstants.LICENSE, example=ApiConstants.METAPI_LICENSE) license: URL,
   @(ApiModelProperty @field)(value=ApiConstants.CREATED_AT, dataType="String", example=ApiConstants.CREATED_AT_EXAMPLE) createdAt: DateTime,
