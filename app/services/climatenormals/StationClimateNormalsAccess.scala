@@ -44,7 +44,7 @@ import play.Logger
  */
 class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
 
-  // supported element IDs with corresponding legacy codes (### hard-coded for now)
+  // supported element IDs with corresponding old codes (### hard-coded for now)
   private val monthElemMap: Map[String, String] = Map(
     "mean(min(air_temperature P1D) P1M)" -> "TANM",
     "mean(max(air_temperature P1D) P1M)" -> "TAXM",
@@ -66,7 +66,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
   )
   private val invDayElemMap = dayElemMap.map(_.swap) // ### WARNING: This assumes that dayElemMap is a one-to-one relation
   //
-  private def fromLegacyElem(legacyElem: String) = if (invMonthElemMap.contains(legacyElem)) invMonthElemMap(legacyElem) else invDayElemMap(legacyElem)
+  private def fromOldElem(oldElem: String) = if (invMonthElemMap.contains(oldElem)) invMonthElemMap(oldElem) else invDayElemMap(oldElem)
 
   private val normalsTableAlias = "nta"
 
@@ -77,7 +77,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
       case None => { // ignore element filtering, i.e. select all available elements
         s"$normalsTableAlias.elem_code IN (${suppElems.values.toSet.toList.map((s: String) => s"'$s'").mkString(",") })"
       }
-      case Some(x) => { // add an OR-expression for every legacy code that matches at least one of the input elements
+      case Some(x) => { // add an OR-expression for every old code that matches at least one of the input elements
         val elemList = x.split(",").map(_.trim)
         val result = suppElems.keys.foldLeft("") { (acc, cur) =>
           acc + s"${
@@ -121,7 +121,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         case sourceid~elementid~validfrom~validto~month~day~normal
         => ClimateNormal(
           sourceid,
-          fromLegacyElem(elementid),
+          fromOldElem(elementid),
           s"$validfrom/$validto",
           month,
           day,
@@ -215,7 +215,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
         case sourceid~elementid~validfrom~validto
         => ClimateNormalsAvailable(
           Some(sourceid),
-          Some(fromLegacyElem(elementid)),
+          Some(fromOldElem(elementid)),
           Some(s"$validfrom/$validto")
         )
       }
