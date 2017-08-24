@@ -55,7 +55,7 @@ class StationClimateNormalsAccess extends ProdClimateNormalsAccess {
     "mean(air_pressure_at_sea_level P1M)" -> "PRM",
     "mean(surface_air_pressure P1M)" -> "POM",
     "sum(duration_of_sunshine P1M)" -> "OT",
-    "integral_of_excess_interpolated(mean(air_temperature P1D) P1M 17.0)" -> "GD17_I",
+    "integral_of_deficit_interpolated(mean(air_temperature P1D) P1M 17.0)" -> "GD17_I",
     "number_of_days_gte(sum(precipitation_amount P1D) P1M 0.1)" -> "DRR_GE1"
   )
   private val invMonthElemMap = monthElemMap.map(_.swap) // ### WARNING: This assumes that monthElemMap is a one-to-one relation
